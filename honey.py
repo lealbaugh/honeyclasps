@@ -2,6 +2,11 @@ import rhinoscriptsyntax as rs
 import random
 import voronoi
 
+from decimal import *
+getcontext().prec = 7
+# need python code to have same precision as Rhino
+
+
 vertex_radius = 1.5
 
 # The voronoi module wants its points as objects, instead of just tuples
@@ -17,13 +22,17 @@ def lerp(value, inputLow, inputHigh, outputLow, outputHigh):
 def makePipesFromVoronoi(results):
 	for edge in results[2]:
 		if edge[1] != -1 and edge[2] != -1:
-			startx = results[0][edge[1]][0]
-			starty = results[0][edge[1]][1]
-			endx = results[0][edge[2]][0]
-			endy = results[0][edge[2]][1]
-			drawPipe(startx, starty, endx, endy)
-	for vertex in results[0]:
-		rs.AddSphere((vertex[0],vertex[1],0), vertex_radius)
+			startx = Decimal(results[0][edge[1]][0]).quantize(Decimal('1.000'))
+			starty = Decimal(results[0][edge[1]][1]).quantize(Decimal('1.000'))
+			endx = Decimal(results[0][edge[2]][0]).quantize(Decimal('1.000'))
+			endy = Decimal(results[0][edge[2]][1]).quantize(Decimal('1.000'))
+			startpoint = [startx, starty, 0]
+			endpoint = [endx, endy, 0]
+			curvelength = rs.Distance(startpoint, endpoint)
+			if curvelength < 25:
+				drawPipe(startpoint, endpoint, curvelength)
+	# for vertex in results[0]:
+	# 	rs.AddSphere((vertex[0],vertex[1],0), vertex_radius)
 
 def makePipesFromDelauney(points, results):
 	for result in results:
@@ -34,20 +43,23 @@ def makePipesFromDelauney(points, results):
 		rs.AddSphere((vertex.x,vertex.y,0), vertex_radius)
 
 
-def drawPipe(startx, starty, endx, endy):
-	curve = rs.AddLine((startx, starty, 0), (endx, endy, 0))
-	curvelength = rs.Distance((startx, starty, 0), (endx, endy, 0))
-	attenuation = lerp(curvelength, 0.0, 20.0, vertex_radius, vertex_radius/3)
+def drawPipe(startpoint, endpoint, curvelength):
+	curve = rs.AddLine(startpoint, endpoint)
+	attenuation = lerp(curvelength, 0.0, 20.0, vertex_radius-vertex_radius/6, vertex_radius/2)
 	if attenuation < vertex_radius/3:
 		attenuation = vertex_radius/3
 	# rhinoscriptsyntax.AddPipe (curve_id, parameters, radii, blend_type=0, cap=0, fit=False)
-	rs.AddPipe(curve, (0,0.5,1), (vertex_radius, attenuation, vertex_radius), fit=True)
+	pipe = rs.AddPipe(curve, (0,0.5,1), (vertex_radius, attenuation, vertex_radius), fit=True)
+	startsphere = rs.AddSphere(startpoint, vertex_radius)
+	endsphere = rs.AddSphere(endpoint, vertex_radius)
+	if pipe and startsphere and endsphere:
+		rs.BooleanUnion([startsphere, pipe, endsphere], True)
 
 points = []
 for i in range(30):
-	point = Point(random.randrange(30), random.randrange(30), 0)
-	rs.AddPoint(point.x, point.y, point.z)
+	point = Point(random.randrange(20), random.randrange(20), 0)
+	# rs.AddPoint(point.x, point.y, point.z)
 	points.append(point)
 
-# makePipesFromVoronoi(voronoi.computeVoronoiDiagram(points))
-makePipesFromDelauney(points, voronoi.computeDelaunayTriangulation(points))
+makePipesFromVoronoi(voronoi.computeVoronoiDiagram(points))
+# makePipesFromDelauney(points, voronoi.computeDelaunayTriangulation(points))
