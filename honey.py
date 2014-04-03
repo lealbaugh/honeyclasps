@@ -48,26 +48,27 @@ def makeCurvesBlobby(curves, vertex_radius):
 	existingsegments = []
 	for curve in curves:
 		curvelength = rs.CurveLength(curve)
-		if curvelength < 25:
-			attenuation = lerp(curvelength, 0.0, 20.0, vertex_radius-vertex_radius/6, vertex_radius/2)
-			if attenuation < vertex_radius/3:
-				attenuation = vertex_radius/3
-			# rhinoscriptsyntax.AddPipe (curve_id, parameters, radii, blend_type=0, cap=0, fit=False)
-			pipe = rs.AddPipe(curve, (0,0.5,1), (vertex_radius, attenuation, vertex_radius), fit=True)
-			startsphere = rs.AddSphere(rs.CurveStartPoint(curve), vertex_radius)
-			endsphere = rs.AddSphere(rs.CurveEndPoint(curve), vertex_radius)
-			if pipe and startsphere and endsphere:
-				pipe = rs.BooleanUnion([startsphere, pipe, endsphere], True)
+		attenuation = lerp(curvelength, 0.0, 20.0, vertex_radius-vertex_radius/6, vertex_radius/2)
+		if attenuation < vertex_radius/3:
+			attenuation = vertex_radius/3
+		# rhinoscriptsyntax.AddPipe (curve_id, parameters, radii, blend_type=0, cap=0, fit=False)
+		pipe = rs.AddPipe(curve, (0,0.5,1), (vertex_radius, attenuation, vertex_radius), fit=True)
+		startsphere = rs.AddSphere(rs.CurveStartPoint(curve), vertex_radius)
+		endsphere = rs.AddSphere(rs.CurveEndPoint(curve), vertex_radius)
+		if pipe and startsphere and endsphere:
+			pipe = rs.BooleanUnion([startsphere, pipe, endsphere], True)
 	web = rs.JoinSurfaces(existingsegments, True)
 	return web
 
-def randomPoints(quantity, area):
+def randomPoints(quantity, area, plotpoints = True):
 	points = []
 	for i in range(quantity):
 		point = Point(random.randrange(area), random.randrange(area), 0)
-		rs.AddPoint(point.x, point.y, point.z)
+		if plotpoints:
+			rs.AddPoint(point.x, point.y, point.z)
 		points.append(point)
 	return points
+
 
 plotVoronoi(voronoi.computeVoronoiDiagram(randomPoints(30,20)))
 curves = rs.GetObjects ( message="Select curves to be blobbified...", filter=4)
