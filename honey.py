@@ -19,13 +19,17 @@ class Point(object):
 def lerp(value, inputLow, inputHigh, outputLow, outputHigh):
 	return (((value-inputLow)/(inputHigh-inputLow))*(outputHigh-outputLow))+outputLow
 
+def decimate(input): 
+	# output a Decimal at rhino-compatible amounts of precision
+	return Decimal(input).quantize(Decimal('1.000'))
+
 def makePipesFromVoronoi(results):
 	for edge in results[2]:
 		if edge[1] != -1 and edge[2] != -1:
-			startx = Decimal(results[0][edge[1]][0]).quantize(Decimal('1.000'))
-			starty = Decimal(results[0][edge[1]][1]).quantize(Decimal('1.000'))
-			endx = Decimal(results[0][edge[2]][0]).quantize(Decimal('1.000'))
-			endy = Decimal(results[0][edge[2]][1]).quantize(Decimal('1.000'))
+			startx = decimate(results[0][edge[1]][0])
+			starty = decimate(results[0][edge[1]][1])
+			endx = decimate(results[0][edge[2]][0])
+			endy = decimate(results[0][edge[2]][1])
 			startpoint = [startx, starty, 0]
 			endpoint = [endx, endy, 0]
 			curvelength = rs.Distance(startpoint, endpoint)
@@ -53,7 +57,8 @@ def drawPipe(startpoint, endpoint, curvelength):
 	startsphere = rs.AddSphere(startpoint, vertex_radius)
 	endsphere = rs.AddSphere(endpoint, vertex_radius)
 	if pipe and startsphere and endsphere:
-		rs.BooleanUnion([startsphere, pipe, endsphere], True)
+		pipe = rs.BooleanUnion([startsphere, pipe, endsphere], True)
+	return pipe
 
 points = []
 for i in range(30):
