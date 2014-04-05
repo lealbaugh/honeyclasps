@@ -6,7 +6,7 @@ from decimal import *
 getcontext().prec = 7
 # need python code to have same precision as Rhino
 
-# The voronoi module wants its points as objects, instead of just tuples
+# The voronoi library expects points to have (lowercase) x,y,z properties, whereas rhino gives them uppercase
 class Point(object):
 	def __init__(self, x=0, y=0, z=0):
 		self.x = x
@@ -20,8 +20,27 @@ def decimate(input):
 	# output a Decimal at rhino-compatible amounts of precision
 	return Decimal(input).quantize(Decimal('1.000'))
 
+def randomPoints(quantity, area):
+	points = []
+	for i in range(quantity):
+		x = random.randrange(area)
+		y = random.randrange(area)
+		z = 0
+		point = rs.AddPoint(x, y, z)
+		points.append(point)
+	return points
+
+def preparePoints(rspoints):
+	lowerpoints = []
+	for point in rspoints:
+		coord = rs.PointCoordinates(point)
+		newpoint = Point(coord.X, coord.Y, coord.Z)
+		print dir(newpoint)
+		lowerpoints.append(newpoint)	
+	return lowerpoints
+
 def plotVoronoi(points):
-	results = voronoi.computeVoronoiDiagram(points)
+	results = voronoi.computeVoronoiDiagram(preparePoints(points))
 	curves = []
 	print "number of edges: "+str(len(results[2]))
 	for edge in results[2]:
@@ -36,7 +55,7 @@ def plotVoronoi(points):
 	return curves
 
 def plotDelaunay(points):
-	results = voronoi.computeDelaunayTriangulation(points)
+	results = voronoi.computeDelaunayTriangulation(preparePoints(points))
 	curves = []
 	for result in results:
 		curves.append(rs.AddLine([points[result[0]].x, points[result[0]].y, 0], [points[result[1]].x, points[result[1]].y, 0]))
@@ -59,12 +78,3 @@ def makeCurvesBlobby(curves, vertex_radius):
 			pipe = rs.BooleanUnion([startsphere, pipe, endsphere], True)
 	web = rs.JoinSurfaces(existingsegments, True)
 	return web
-
-def randomPoints(quantity, area, plotpoints = True):
-	points = []
-	for i in range(quantity):
-		point = Point(random.randrange(area), random.randrange(area), 0)
-		if plotpoints:
-			rs.AddPoint(point.x, point.y, point.z)
-		points.append(point)
-	return points
