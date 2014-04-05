@@ -6,9 +6,6 @@ from decimal import *
 getcontext().prec = 7
 # need python code to have same precision as Rhino
 
-
-vertex_radius = 1.5
-
 # The voronoi module wants its points as objects, instead of just tuples
 class Point(object):
 	def __init__(self, x=0, y=0, z=0):
@@ -23,7 +20,8 @@ def decimate(input):
 	# output a Decimal at rhino-compatible amounts of precision
 	return Decimal(input).quantize(Decimal('1.000'))
 
-def plotVoronoi(results):
+def plotVoronoi(points):
+	results = voronoi.computeVoronoiDiagram(points)
 	curves = []
 	print "number of edges: "+str(len(results[2]))
 	for edge in results[2]:
@@ -37,7 +35,8 @@ def plotVoronoi(results):
 			curves.append(rs.AddLine(startpoint, endpoint))
 	return curves
 
-def plotDelauney(points, results):
+def plotDelaunay(points):
+	results = voronoi.computeDelaunayTriangulation(points)
 	curves = []
 	for result in results:
 		curves.append(rs.AddLine([points[result[0]].x, points[result[0]].y, 0], [points[result[1]].x, points[result[1]].y, 0]))
@@ -69,10 +68,3 @@ def randomPoints(quantity, area, plotpoints = True):
 			rs.AddPoint(point.x, point.y, point.z)
 		points.append(point)
 	return points
-
-
-# plotVoronoi(voronoi.computeVoronoiDiagram(randomPoints(10,40)))
-points = randomPoints(10,40)
-plotDelauney(points, voronoi.computeDelaunayTriangulation(points))
-curves = rs.GetObjects ( message="Select curves to be blobbified...", filter=4)
-makeCurvesBlobby(curves, 1)
