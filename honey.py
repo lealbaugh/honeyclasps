@@ -25,6 +25,7 @@ def decimate(input):
 
 def plotVoronoi(results):
 	curves = []
+	print "number of edges: "+str(len(results[2]))
 	for edge in results[2]:
 		if edge[1] != -1 and edge[2] != -1:
 			startx = decimate(results[0][edge[1]][0])
@@ -39,9 +40,9 @@ def plotVoronoi(results):
 def plotDelauney(points, results):
 	curves = []
 	for result in results:
-		curves.append(rs.AddLine(points[result[0]].x, points[result[0]].y, points[result[1]].x, points[result[1]].y))
-		curves.append(rs.AddLine(points[result[1]].x, points[result[1]].y, points[result[2]].x, points[result[2]].y))
-		curves.append(rs.AddLine(points[result[2]].x, points[result[2]].y, points[result[0]].x, points[result[0]].y))
+		curves.append(rs.AddLine([points[result[0]].x, points[result[0]].y, 0], [points[result[1]].x, points[result[1]].y, 0]))
+		curves.append(rs.AddLine([points[result[1]].x, points[result[1]].y, 0], [points[result[2]].x, points[result[2]].y, 0]))
+		curves.append(rs.AddLine([points[result[2]].x, points[result[2]].y, 0], [points[result[0]].x, points[result[0]].y, 0]))
 	return curves
 
 def makeCurvesBlobby(curves, vertex_radius):
@@ -70,6 +71,8 @@ def randomPoints(quantity, area, plotpoints = True):
 	return points
 
 
-plotVoronoi(voronoi.computeVoronoiDiagram(randomPoints(30,20)))
+# plotVoronoi(voronoi.computeVoronoiDiagram(randomPoints(10,40)))
+points = randomPoints(10,40)
+plotDelauney(points, voronoi.computeDelaunayTriangulation(points))
 curves = rs.GetObjects ( message="Select curves to be blobbified...", filter=4)
-makeCurvesBlobby(curves, 1.5)
+makeCurvesBlobby(curves, 1)
