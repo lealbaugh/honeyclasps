@@ -3,10 +3,10 @@ import honey
 
 
 
-points = rs.GetPoints ( message1="Select points, or none for random...", message2="Press Enter when done")
+points = rs.GetObjects ( message="Select points, or none for random...", filter=1, preselect=True)
 if not points:
 	points = honey.randomPoints(10,40)
-mode = rs.GetBoolean (message="Voronoi or Delaunay triangulation?", items=[["Mode", "Voronoi", "Delaunay"]], defaults=[False])
+mode = rs.GetBoolean (message="Voronoi diagram or Delaunay triangulation?", items=[["Mode", "Voronoi", "Delaunay"]], defaults=[False])
 if mode:
 	if mode[0] is False:
 		honey.plotVoronoi(points)
