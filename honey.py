@@ -65,17 +65,17 @@ def plotDelaunay(inputpoints):
 	return curves
 
 def makeCurvesBlobby(curves, vertex_radius):
-	existingsegments = []
-	biggestlength = 0.0
+	# existingsegments = []
+	# biggestlength = 0.0
+	# for curve in curves:
+	# 	thislength = rs.CurveLength(curve)
+	# 	if thislength > biggestlength:
+	# 		biggestlength = thislength
 	for curve in curves:
-		thislength = rs.CurveLength(curve)
-		if thislength > biggestlength:
-			biggestlength = thislength
-	for curve in curves:
-		curvelength = rs.CurveLength(curve)
-		attenuation = lerp(curvelength, 0.0, biggestlength, vertex_radius-vertex_radius/6, 3*vertex_radius/5)
-		if attenuation < vertex_radius/3:
-			attenuation = vertex_radius/3
+		# curvelength = rs.CurveLength(curve)
+		# attenuation = lerp(curvelength, 0.0, biggestlength, vertex_radius-vertex_radius/6, 3*vertex_radius/5)
+		# if attenuation < vertex_radius/3:
+		# 	attenuation = vertex_radius/3
 		# AddPipe args: curve_id, parameters, radii, blend_type=0, cap=0, fit=False
 		# parameters are the locations along the curve for the radii to apply, where 0 is the start and 1 is the end of the curve
 		pipe = rs.AddPipe(curve, (0,0.5,1), (vertex_radius, vertex_radius/2, vertex_radius))
